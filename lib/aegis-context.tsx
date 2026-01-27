@@ -22,7 +22,7 @@ interface AegisContextValue {
 const AegisContext = createContext<AegisContextValue | null>(null)
 
 const DEFAULT_CONFIG: ApiConfig = {
-  apiBaseUrl: "https://yvgrxzdyd6.execute-api.ap-southeast-2.amazonaws.com/prod",
+  apiBaseUrl: "https://vivfnom8oc.execute-api.ap-southeast-1.amazonaws.com/prod/data",
   deviceId: "AegisOne_M5_01",
   limit: 60,
 }
