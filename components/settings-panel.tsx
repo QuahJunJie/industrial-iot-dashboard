@@ -78,8 +78,6 @@ export function SettingsPanel() {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [saved, setSaved] = useState(false)
   const { isConnected, autoRefresh, setAutoRefresh } = useAegis()
-  
-  console.log("[v0] SettingsPanel rendered, isOpen:", isOpen)
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -124,40 +122,38 @@ export function SettingsPanel() {
         <Button
           variant="outline"
           size="icon"
-          onClick={() => {
-            console.log("[v0] Settings button clicked")
-            setIsOpen(true)
-          }}
+          onClick={() => setIsOpen(true)}
           className="h-9 w-9 bg-secondary/30 border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200"
         >
           <Settings className="h-4 w-4" />
         </Button>
       </motion.div>
 
-      {/* Backdrop */}
+      {/* Backdrop and Panel Container */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
-            onClick={() => setIsOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Settings Panel */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed top-0 right-0 h-full w-full max-w-md bg-card border-l border-border/50 shadow-2xl z-50 overflow-hidden flex flex-col"
-          >
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm"
+              style={{ zIndex: 9998 }}
+              onClick={() => setIsOpen(false)}
+            />
+            
+            {/* Settings Panel */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-card border-l border-border/50 shadow-2xl overflow-hidden flex flex-col"
+              style={{ zIndex: 9999 }}
+              onClick={(e) => e.stopPropagation()}
+            >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-border/30">
               <div className="flex items-center gap-3">
@@ -500,6 +496,7 @@ export function SettingsPanel() {
               </Button>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
