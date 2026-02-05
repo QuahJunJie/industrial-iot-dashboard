@@ -6,6 +6,7 @@ import { Activity, Wifi, WifiOff, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAegis } from "@/lib/aegis-context"
+import { SettingsPanel } from "@/components/settings-panel"
 
 export function TopBar() {
   const { isConnected, lastUpdated } = useAegis()
@@ -90,6 +91,9 @@ export function TopBar() {
               </span>
             </div>
           )}
+          
+          {/* Settings Panel */}
+          <SettingsPanel />
           
           {/* Admin Analytics Link */}
           <Link href="/admin/login">
