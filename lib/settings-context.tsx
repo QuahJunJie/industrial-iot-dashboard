@@ -56,7 +56,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        setSettings({ ...DEFAULT_SETTINGS, ...parsed })
+        // Ensure all numeric values are valid numbers, fallback to defaults if not
+        const validatedSettings = { ...DEFAULT_SETTINGS }
+        for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof AppSettings)[]) {
+          const parsedValue = parsed[key]
+          const defaultValue = DEFAULT_SETTINGS[key]
+          if (parsedValue !== undefined && parsedValue !== null) {
+            // For numbers, ensure they're valid
+            if (typeof defaultValue === 'number') {
+              validatedSettings[key] = typeof parsedValue === 'number' && !isNaN(parsedValue) 
+                ? parsedValue 
+                : defaultValue
+            } else {
+              validatedSettings[key] = parsedValue
+            }
+          }
+        }
+        setSettings(validatedSettings as AppSettings)
       } catch {
         // Invalid JSON, use defaults
       }
@@ -119,6 +135,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, [settings.temperatureUnit])
 
   const formatTemperature = useCallback((celsius: number): string => {
+    if (celsius === undefined || celsius === null || isNaN(celsius)) {
+      return "—"
+    }
     const value = convertTemperature(celsius)
     const unit = settings.temperatureUnit === "fahrenheit" ? "°F" : "°C"
     return `${value.toFixed(1)}${unit}`

@@ -254,9 +254,9 @@ export function SettingsPanel() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
                     <p className="text-[10px] uppercase tracking-wider text-yellow-500 mb-1">Warning</p>
-                    <span className="text-xl font-mono font-bold text-foreground">{settings.vibWarningThreshold.toFixed(1)}g</span>
+                    <span className="text-xl font-mono font-bold text-foreground">{(settings.vibWarningThreshold ?? 1.5).toFixed(1)}g</span>
                     <Slider
-                      value={[settings.vibWarningThreshold * 10]}
+                      value={[(settings.vibWarningThreshold ?? 1.5) * 10]}
                       onValueChange={([v]) => updateSetting("vibWarningThreshold", v / 10)}
                       min={5}
                       max={30}
@@ -266,9 +266,9 @@ export function SettingsPanel() {
                   </div>
                   <div className="p-3 rounded-xl bg-destructive/5 border border-destructive/20">
                     <p className="text-[10px] uppercase tracking-wider text-destructive mb-1">Critical</p>
-                    <span className="text-xl font-mono font-bold text-foreground">{settings.vibCriticalThreshold.toFixed(1)}g</span>
+                    <span className="text-xl font-mono font-bold text-foreground">{(settings.vibCriticalThreshold ?? 2.5).toFixed(1)}g</span>
                     <Slider
-                      value={[settings.vibCriticalThreshold * 10]}
+                      value={[(settings.vibCriticalThreshold ?? 2.5) * 10]}
                       onValueChange={([v]) => updateSetting("vibCriticalThreshold", v / 10)}
                       min={15}
                       max={50}
