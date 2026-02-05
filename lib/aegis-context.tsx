@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from "react"
 import type { AegisOneResponse, ApiConfig, EventItem } from "./types"
+import { useSettings } from "./settings-context"
 
 interface AegisContextValue {
   data: AegisOneResponse | null
@@ -28,13 +29,14 @@ const DEFAULT_CONFIG: ApiConfig = {
 }
 
 export function AegisProvider({ children }: { children: React.ReactNode }) {
+  const { settings } = useSettings()
   const [data, setData] = useState<AegisOneResponse | null>(null)
   const [config, setConfig] = useState<ApiConfig>(DEFAULT_CONFIG)
   const [isConnected, setIsConnected] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [autoRefresh, setAutoRefresh] = useState(settings.autoRefreshDefault)
   const [newAlert, setNewAlert] = useState<EventItem | null>(null)
 
   const lastSeenEventTs = useRef<number>(0)
@@ -98,13 +100,14 @@ export function AegisProvider({ children }: { children: React.ReactNode }) {
     fetchData()
   }, [fetchData])
 
-  // Auto-refresh polling
+  // Auto-refresh polling - uses interval from settings
   useEffect(() => {
     if (!autoRefresh) return
 
-    const interval = setInterval(fetchData, 5000)
+    const intervalMs = settings.refreshInterval * 1000
+    const interval = setInterval(fetchData, intervalMs)
     return () => clearInterval(interval)
-  }, [autoRefresh, fetchData])
+  }, [autoRefresh, fetchData, settings.refreshInterval])
 
   // Cleanup on unmount
   useEffect(() => {

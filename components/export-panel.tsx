@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Download, Copy, Check } from "lucide-react"
+import { Download, Copy, Check, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAegis } from "@/lib/aegis-context"
 
@@ -32,40 +32,44 @@ export function ExportPanel() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.5 }}
-      className="flex items-center gap-2"
-    >
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleDownloadJson}
-        disabled={!data}
-        className="gap-1.5 bg-transparent"
-      >
-        <Download className="h-3.5 w-3.5" />
-        Download JSON
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleCopyUrl}
-        className="gap-1.5 bg-transparent"
-      >
-        {copiedUrl ? (
-          <>
-            <Check className="h-3.5 w-3.5 text-primary" />
-            Copied!
-          </>
-        ) : (
-          <>
-            <Copy className="h-3.5 w-3.5" />
-            Copy API URL
-          </>
-        )}
-      </Button>
-    </motion.div>
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-card/60 backdrop-blur-sm border border-border/30">
+      <span className="text-xs text-muted-foreground mr-1">Export:</span>
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleDownloadJson}
+          disabled={!data}
+          className="gap-2 h-9 bg-secondary/50 border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200"
+        >
+          <Download className="h-4 w-4" />
+          JSON
+        </Button>
+      </motion.div>
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCopyUrl}
+          className="gap-2 h-9 bg-secondary/50 border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200"
+        >
+          {copiedUrl ? (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="flex items-center gap-2"
+            >
+              <Check className="h-4 w-4 text-primary" />
+              <span className="text-primary">Copied!</span>
+            </motion.div>
+          ) : (
+            <>
+              <Copy className="h-4 w-4" />
+              API URL
+            </>
+          )}
+        </Button>
+      </motion.div>
+    </div>
   )
 }

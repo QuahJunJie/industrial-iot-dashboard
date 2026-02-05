@@ -6,6 +6,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Required for AWS Amplify SSR support
+  output: 'standalone',
 }
 
 export default nextConfig

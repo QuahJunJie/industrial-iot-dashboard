@@ -9,17 +9,30 @@ import { useAegis } from "@/lib/aegis-context"
 import { useEffect, useState } from "react"
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, delay: 0.15 + i * 0.06 },
+    scale: 1,
+    transition: { 
+      duration: 0.5, 
+      delay: i * 0.1,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    },
   }),
 }
 
 const hoverVariants = {
-  rest: { y: 0, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" },
-  hover: { y: -2, boxShadow: "0 8px 25px rgba(0,0,0,0.25)" },
+  rest: { 
+    y: 0, 
+    scale: 1,
+    transition: { duration: 0.3, ease: "easeOut" }
+  },
+  hover: { 
+    y: -4, 
+    scale: 1.02,
+    transition: { duration: 0.3, ease: "easeOut" }
+  },
 }
 
 function DeltaChip({ current, previous, unit }: { current: number; previous: number; unit: string }) {
@@ -29,12 +42,20 @@ function DeltaChip({ current, previous, unit }: { current: number; previous: num
   if (Math.abs(delta) < 0.01) return null
 
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs ${isPositive ? "text-yellow-500" : "text-primary"}`}>
+    <motion.span 
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
+        isPositive 
+          ? "text-yellow-400 bg-yellow-500/10" 
+          : "text-primary bg-primary/10"
+      }`}
+    >
       {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
       {isPositive ? "+" : ""}
       {delta.toFixed(1)}
       {unit}
-    </span>
+    </motion.span>
   )
 }
 
@@ -151,7 +172,7 @@ export function KpiCards() {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
       {kpis.map((kpi, i) => (
         <motion.div
           key={kpi.label}
@@ -162,43 +183,56 @@ export function KpiCards() {
           whileHover="hover"
         >
           <motion.div variants={hoverVariants}>
-            <Card className="bg-card border-border relative overflow-hidden">
+            <Card className="bg-card/80 backdrop-blur-sm border-border/50 relative overflow-hidden group card-hover">
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
               {/* Pulse effect for severity card */}
               <AnimatePresence>
                 {kpi.showPulse && showPulse && (
                   <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 2, opacity: 0 }}
+                    initial={{ scale: 0.8, opacity: 0.6 }}
+                    animate={{ scale: 2.5, opacity: 0 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
                     className={`absolute inset-0 rounded-lg ${
                       pulseIntensity === "critical" ? "bg-destructive" : "bg-yellow-500"
                     }`}
                   />
                 )}
               </AnimatePresence>
-              <CardHeader className="pb-2">
+              
+              <CardHeader className="pb-2 relative">
                 <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                  {kpi.icon}
+                  <span className="p-1.5 rounded-md bg-secondary/80 text-foreground/70">
+                    {kpi.icon}
+                  </span>
                   {kpi.label}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              
+              <CardContent className="relative">
                 {isLoading && !data ? (
-                  <Skeleton className="h-8 w-20" />
+                  <div className="h-8 w-20 shimmer rounded" />
                 ) : kpi.isBadge ? (
-                  <Badge className={kpi.badgeClass}>{kpi.value}</Badge>
+                  <motion.div
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Badge className={`${kpi.badgeClass} text-xs font-semibold px-3 py-1`}>{kpi.value}</Badge>
+                  </motion.div>
                 ) : (
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-mono font-bold text-foreground">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl font-mono font-bold text-foreground tracking-tight">
                         {typeof kpi.value === "number" ? (
                           <AnimatedNumber value={kpi.value} />
                         ) : (
                           kpi.value ?? "N/A"
                         )}
                       </span>
-                      {kpi.unit && <span className="text-sm text-muted-foreground">{kpi.unit}</span>}
+                      {kpi.unit && <span className="text-sm text-muted-foreground font-medium">{kpi.unit}</span>}
                     </div>
                     {kpi.delta && (
                       <DeltaChip

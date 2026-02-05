@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { AegisProvider } from "@/lib/aegis-context"
+import { SettingsProvider } from "@/lib/settings-context"
 import { TopBar } from "@/components/top-bar"
 import { ControlsCard } from "@/components/controls-card"
 import { KpiCards } from "@/components/kpi-cards"
@@ -12,47 +13,82 @@ import { ExportPanel } from "@/components/export-panel"
 import { ErrorBanner } from "@/components/error-banner"
 import { AlertToast } from "@/components/alert-toast"
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 0.46, 0.45, 0.94],
+    },
+  },
+}
+
 export default function Dashboard() {
   return (
-    <AegisProvider>
-      <div className="min-h-screen bg-background">
+    <SettingsProvider>
+      <AegisProvider>
+        <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Subtle background gradient */}
+        <div className="fixed inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-transparent pointer-events-none" />
+        <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/[0.03] rounded-full blur-3xl pointer-events-none" />
+        
         <TopBar />
         <ErrorBanner />
 
         <motion.main
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.35 }}
-          className="p-4 lg:p-6 space-y-6 max-w-[1600px] mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="relative z-10 p-4 lg:p-8 space-y-8 max-w-[1600px] mx-auto"
         >
           {/* Controls */}
-          <ControlsCard />
+          <motion.div variants={itemVariants}>
+            <ControlsCard />
+          </motion.div>
 
           {/* KPI Cards */}
-          <KpiCards />
+          <motion.div variants={itemVariants}>
+            <KpiCards />
+          </motion.div>
 
           {/* Charts and System Health */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <TelemetryCharts />
             </div>
             <div>
               <SystemHealth />
             </div>
-          </div>
+          </motion.div>
 
           {/* Events Table */}
-          <EventsTable />
+          <motion.div variants={itemVariants}>
+            <EventsTable />
+          </motion.div>
 
           {/* Export Panel */}
-          <div className="flex justify-end">
+          <motion.div variants={itemVariants} className="flex justify-end pb-4">
             <ExportPanel />
-          </div>
+          </motion.div>
         </motion.main>
 
         {/* Alert Toast */}
         <AlertToast />
       </div>
-    </AegisProvider>
+      </AegisProvider>
+    </SettingsProvider>
   )
 }

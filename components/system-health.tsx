@@ -1,9 +1,8 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Clock, Percent, Timer, CheckCircle, XCircle, HelpCircle } from "lucide-react"
+import { Clock, Percent, Timer, CheckCircle, XCircle, HelpCircle, HeartPulse } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
@@ -14,11 +13,16 @@ import { useAegis } from "@/lib/aegis-context"
 import { useMemo } from "react"
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, y: 12, scale: 0.95 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.35, delay: 0.4 + i * 0.06 },
+    scale: 1,
+    transition: { 
+      duration: 0.4, 
+      delay: 0.1 + i * 0.08,
+      ease: [0.25, 0.46, 0.45, 0.94]
+    },
   }),
 }
 
@@ -33,22 +37,24 @@ function ValidationBadge({ label, value, tooltip }: ValidationBadgeProps) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div
-            className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-medium ${
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-default transition-colors duration-200 ${
               value
-                ? "bg-primary/10 text-primary"
-                : "bg-secondary text-muted-foreground"
+                ? "bg-primary/15 text-primary border border-primary/20"
+                : "bg-secondary/60 text-muted-foreground border border-transparent"
             }`}
           >
             {value ? (
-              <CheckCircle className="h-3 w-3" />
+              <CheckCircle className="h-3.5 w-3.5" />
             ) : (
-              <XCircle className="h-3 w-3" />
+              <XCircle className="h-3.5 w-3.5" />
             )}
             {label}
-          </div>
+          </motion.div>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="max-w-[200px]">
+        <TooltipContent side="bottom" className="max-w-[200px] bg-card border-border">
           <p className="text-xs">{tooltip}</p>
         </TooltipContent>
       </Tooltip>
@@ -111,110 +117,111 @@ export function SystemHealth() {
   ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.45 }}
-    >
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-            System Health
+    <Card className="bg-card/80 backdrop-blur-sm border-border/50 card-hover h-full">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+          <span className="p-1.5 rounded-md bg-secondary/80">
+            <HeartPulse className="h-4 w-4 text-primary" />
+          </span>
+          System Health
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-[250px] bg-card border-border">
+                <p className="text-xs">
+                  Real-time system metrics including alert frequency, operational uptime,
+                  and test validation status.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className="grid grid-cols-3 gap-3">
+          {healthItems.map((item, i) => (
+            <motion.div
+              key={item.label}
+              custom={i}
+              variants={cardVariants}
+              initial="hidden"
+              animate="visible"
+              whileHover={{ scale: 1.02 }}
+              className="p-3 bg-secondary/40 rounded-xl border border-border/30 hover:border-primary/20 transition-colors duration-300"
+            >
+              {isLoading && !data ? (
+                <div className="h-12 w-full shimmer rounded" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+                    <span className="text-primary/70">{item.icon}</span>
+                    {item.label}
+                  </div>
+                  <div className="text-xl font-mono font-bold text-foreground">
+                    {item.value}
+                    <span className="text-xs text-muted-foreground/70 ml-1 font-normal">
+                      {item.suffix}
+                    </span>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Validation Widget */}
+        <div className="pt-4 border-t border-border/30">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-muted-foreground font-medium">Test Validation</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                  <HelpCircle className="h-3 w-3 text-muted-foreground/50 hover:text-muted-foreground transition-colors cursor-help" />
                 </TooltipTrigger>
-                <TooltipContent side="right" className="max-w-[250px]">
+                <TooltipContent side="right" className="max-w-[250px] bg-card border-border">
                   <p className="text-xs">
-                    Real-time system metrics including alert frequency, operational uptime,
-                    and test validation status.
+                    These flags indicate test validation results from the anomaly detection
+                    system. Used to measure detection accuracy.
                   </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
-            {healthItems.map((item, i) => (
-              <motion.div
-                key={item.label}
-                custom={i}
-                variants={cardVariants}
-                initial="hidden"
-                animate="visible"
-                className="p-3 bg-secondary/50 rounded-lg"
-              >
-                {isLoading && !data ? (
-                  <Skeleton className="h-10 w-full" />
-                ) : (
-                  <>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-                      {item.icon}
-                      {item.label}
-                    </div>
-                    <div className="text-lg font-mono font-semibold text-foreground">
-                      {item.value}
-                      <span className="text-xs text-muted-foreground ml-0.5">
-                        {item.suffix}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </motion.div>
-            ))}
           </div>
-
-          {/* Validation Widget */}
-          <div className="pt-2 border-t border-border">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs text-muted-foreground">Test Validation</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="max-w-[250px]">
-                    <p className="text-xs">
-                      These flags indicate test validation results from the anomaly detection
-                      system. Used to measure detection accuracy.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          {isLoading && !data ? (
+            <div className="h-8 w-full shimmer rounded" />
+          ) : stats?.validation ? (
+            <div className="flex flex-wrap gap-2">
+              <ValidationBadge
+                label="TP"
+                value={stats.validation.tp}
+                tooltip="True Positive: Correctly detected a real anomaly"
+              />
+              <ValidationBadge
+                label="FP"
+                value={stats.validation.fp}
+                tooltip="False Positive: Incorrectly flagged as anomaly when normal"
+              />
+              <ValidationBadge
+                label="TN"
+                value={stats.validation.tn}
+                tooltip="True Negative: Correctly identified normal behavior"
+              />
+              <ValidationBadge
+                label="FN"
+                value={stats.validation.fn}
+                tooltip="False Negative: Missed a real anomaly"
+              />
             </div>
-            {isLoading && !data ? (
-              <Skeleton className="h-8 w-full" />
-            ) : stats?.validation ? (
-              <div className="flex flex-wrap gap-2">
-                <ValidationBadge
-                  label="TP"
-                  value={stats.validation.tp}
-                  tooltip="True Positive: Correctly detected a real anomaly"
-                />
-                <ValidationBadge
-                  label="FP"
-                  value={stats.validation.fp}
-                  tooltip="False Positive: Incorrectly flagged as anomaly when normal"
-                />
-                <ValidationBadge
-                  label="TN"
-                  value={stats.validation.tn}
-                  tooltip="True Negative: Correctly identified normal behavior"
-                />
-                <ValidationBadge
-                  label="FN"
-                  value={stats.validation.fn}
-                  tooltip="False Negative: Missed a real anomaly"
-                />
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground">No validation data</span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+          ) : (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
+              <XCircle className="h-3.5 w-3.5" />
+              No validation data available
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

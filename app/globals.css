@@ -124,3 +124,164 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Glass morphism effects */
+.glass {
+  @apply bg-card/80 backdrop-blur-xl border-border/50;
+}
+
+.glass-subtle {
+  @apply bg-card/60 backdrop-blur-md border-border/30;
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px oklch(0.65 0.2 145 / 0.15);
+}
+
+.glow-primary-subtle {
+  box-shadow: 0 0 30px oklch(0.65 0.2 145 / 0.08);
+}
+
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* Card hover enhancement */
+.card-hover {
+  @apply transition-all duration-300 ease-out;
+}
+
+.card-hover:hover {
+  @apply border-primary/30;
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.3), 0 0 0 1px oklch(0.65 0.2 145 / 0.1);
+}
+
+/* Shimmer loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.01 250) 0%,
+    oklch(0.28 0.01 250) 50%,
+    oklch(0.22 0.01 250) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Pulse glow for status indicators */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 oklch(0.65 0.2 145 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px oklch(0.65 0.2 145 / 0.2);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Smooth scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full transition-colors;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Table row hover effect */
+.table-row-hover {
+  @apply transition-colors duration-200;
+}
+
+.table-row-hover:hover {
+  @apply bg-secondary/60;
+}
+
+/* Focus ring enhancement */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}
+
+/* Compact mode - reduces spacing throughout */
+.compact main {
+  @apply p-2 lg:p-4 space-y-4;
+}
+
+.compact .space-y-6 {
+  @apply space-y-3;
+}
+
+.compact .space-y-8 {
+  @apply space-y-4;
+}
+
+.compact .gap-6 {
+  @apply gap-3;
+}
+
+.compact .gap-5 {
+  @apply gap-2;
+}
+
+.compact .p-4 {
+  @apply p-2;
+}
+
+.compact .py-6 {
+  @apply py-3;
+}
+
+/* Disable animations */
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Light theme */
+.light {
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.15 0.01 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.01 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 250);
+  --primary: oklch(0.45 0.2 145);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.93 0.01 250);
+  --secondary-foreground: oklch(0.15 0.01 250);
+  --muted: oklch(0.93 0.01 250);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.45 0.2 145);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.25 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.88 0.01 250);
+  --input: oklch(0.93 0.01 250);
+  --ring: oklch(0.45 0.2 145);
+}
