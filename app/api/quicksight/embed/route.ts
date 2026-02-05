@@ -14,17 +14,38 @@ const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID || ""
 const QUICKSIGHT_DASHBOARD_ID = process.env.QUICKSIGHT_DASHBOARD_ID || ""
 const QUICKSIGHT_NAMESPACE = process.env.QUICKSIGHT_NAMESPACE || "default"
 
-// Initialize AWS clients
+/**
+ * AWS Client Configuration
+ * 
+ * On AWS Amplify: Credentials are automatically provided via IAM Role
+ * - No need for AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY
+ * - Amplify injects credentials via the execution role
+ * 
+ * On other platforms (Vercel, local): Uses explicit credentials from env vars
+ */
+const isAmplifyEnvironment = !!process.env.AWS_EXECUTION_ENV || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+
+// Initialize AWS clients - credentials auto-detected on Amplify, explicit otherwise
 const quickSightClient = new QuickSightClient({
   region: AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
+  // On Amplify, omit credentials to use IAM role
+  // On other platforms, use explicit credentials if available
+  ...(isAmplifyEnvironment ? {} : {
+    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    } : undefined,
+  }),
 })
 
 const cognitoClient = new CognitoIdentityProviderClient({
   region: AWS_REGION,
+  ...(isAmplifyEnvironment ? {} : {
+    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    } : undefined,
+  }),
 })
 
 // Helper to decode JWT
@@ -121,6 +142,7 @@ export async function POST(request: NextRequest) {
       AllowedDomains: [
         process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
         "https://*.vercel.app",
+        "https://*.amplifyapp.com", // AWS Amplify hosted apps
       ],
     })
 
