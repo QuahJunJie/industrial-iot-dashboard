@@ -119,8 +119,8 @@ export function SettingsPanel() {
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="w-full max-w-md overflow-y-auto">
-        <SheetHeader className="pb-4">
+      <SheetContent className="w-full max-w-md flex flex-col">
+        <SheetHeader className="pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
@@ -137,7 +137,7 @@ export function SettingsPanel() {
           </div>
         </SheetHeader>
 
-        <div className="space-y-6 pb-6">
+        <div className="flex-1 overflow-y-auto space-y-6 pb-6 pr-2">
           {/* Display Section */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium">
