@@ -24,6 +24,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -226,6 +227,9 @@ export function EventsTable() {
                     {selectedEvent.severity}
                   </Badge>
                 </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Full event data at {new Date(selectedEvent.eventTs).toLocaleString()}
+                </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[60vh]">
                 <pre className="p-4 bg-secondary/50 rounded-xl text-xs font-mono overflow-x-auto border border-border/20">

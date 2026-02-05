@@ -8,6 +8,18 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAegis } from "@/lib/aegis-context"
 import { useEffect, useState } from "react"
 
+interface KpiItem {
+  label: string
+  icon: React.ReactNode
+  value: string | number | undefined
+  unit?: string
+  isBadge?: boolean
+  badgeClass?: string
+  subValue?: string
+  showPulse?: boolean
+  delta?: { current: number; previous: number; unit: string } | null
+}
+
 const cardVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: (i: number) => ({
@@ -163,7 +175,7 @@ export function KpiCards() {
   // Determine proximity status (from data or calculated)
   const proximityStatus = latest?.proximity || getProximityStatus(latest?.distance)
 
-  const kpis = [
+  const kpis: KpiItem[] = [
     {
       label: "Status",
       icon: <Activity className="h-4 w-4" />,

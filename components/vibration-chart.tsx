@@ -101,16 +101,16 @@ export function VibrationChart() {
             <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <XAxis
                 dataKey="time"
-                tick={{ fill: "#888", fontSize: 10 }}
+                tick={{ fill: "#a1a1aa", fontSize: 11, fontWeight: 500 }}
                 tickLine={false}
-                axisLine={{ stroke: "#333" }}
+                axisLine={{ stroke: "#3f3f46", strokeOpacity: 0.5 }}
                 interval="preserveStartEnd"
               />
               <YAxis
                 domain={[0, 8]}
-                tick={{ fill: "#888", fontSize: 10 }}
+                tick={{ fill: "#a1a1aa", fontSize: 11, fontWeight: 500 }}
                 tickLine={false}
-                axisLine={{ stroke: "#333" }}
+                axisLine={{ stroke: "#3f3f46", strokeOpacity: 0.5 }}
                 tickFormatter={(value) => `${value}`}
               />
               <Tooltip
