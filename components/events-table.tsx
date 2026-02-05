@@ -197,10 +197,10 @@ export function EventsTable() {
                         {event.details.alerts.join(" • ") || "—"}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm">
-                        {event.details.temp.toFixed(1)}
+                        {event.details?.temp != null ? event.details.temp.toFixed(1) : "—"}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm">
-                        {event.details.vib.toFixed(2)}
+                        {event.details?.vib != null ? event.details.vib.toFixed(2) : "—"}
                       </TableCell>
                     </motion.tr>
                   ))}
