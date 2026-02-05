@@ -30,6 +30,7 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -82,7 +83,7 @@ export function SettingsPanel() {
               </div>
               <div>
                 <SheetTitle className="text-lg">Settings</SheetTitle>
-                <p className="text-xs text-muted-foreground">Customize your dashboard</p>
+                <SheetDescription className="text-xs text-muted-foreground">Customize your dashboard</SheetDescription>
               </div>
             </div>
             {saved && (
