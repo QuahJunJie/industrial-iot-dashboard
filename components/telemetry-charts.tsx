@@ -126,19 +126,19 @@ export function TelemetryCharts() {
                         <stop offset="100%" stopColor={config.stroke} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.3} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" strokeOpacity={0.5} vertical={false} />
                     <XAxis
                       dataKey="time"
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                      tick={{ fill: "#a1a1aa", fontSize: 11, fontWeight: 500 }}
                       tickLine={false}
-                      axisLine={{ stroke: "hsl(var(--border))", strokeOpacity: 0.3 }}
+                      axisLine={{ stroke: "#3f3f46", strokeOpacity: 0.5 }}
                       interval="preserveStartEnd"
                     />
                     <YAxis
                       domain={config.domain}
-                      tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+                      tick={{ fill: "#a1a1aa", fontSize: 11, fontWeight: 500 }}
                       tickLine={false}
-                      axisLine={{ stroke: "hsl(var(--border))", strokeOpacity: 0.3 }}
+                      axisLine={{ stroke: "#3f3f46", strokeOpacity: 0.5 }}
                     />
                     <Tooltip
                       contentStyle={{
