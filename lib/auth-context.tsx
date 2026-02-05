@@ -67,7 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   const isAuthenticated = !!user
-  const isAdmin = user?.groups?.includes("admin") || user?.groups?.includes("Admin") || false
+  const isAdmin = user?.groups?.some(
+    (group) => group.toLowerCase() === "admin" || group.toLowerCase() === "admins"
+  ) || false
 
   // Restore session from storage on mount
   useEffect(() => {
