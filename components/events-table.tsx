@@ -24,6 +24,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -197,10 +198,10 @@ export function EventsTable() {
                         {event.details.alerts.join(" • ") || "—"}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm">
-                        {event.details.temp.toFixed(1)}
+                        {event.details?.temp != null ? event.details.temp.toFixed(1) : "—"}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm">
-                        {event.details.vib.toFixed(2)}
+                        {event.details?.vib != null ? event.details.vib.toFixed(2) : "—"}
                       </TableCell>
                     </motion.tr>
                   ))}
@@ -226,6 +227,9 @@ export function EventsTable() {
                     {selectedEvent.severity}
                   </Badge>
                 </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Full event data at {new Date(selectedEvent.eventTs).toLocaleString()}
+                </DialogDescription>
               </DialogHeader>
               <ScrollArea className="max-h-[60vh]">
                 <pre className="p-4 bg-secondary/50 rounded-xl text-xs font-mono overflow-x-auto border border-border/20">

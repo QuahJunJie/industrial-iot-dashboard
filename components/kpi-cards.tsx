@@ -1,12 +1,24 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { Thermometer, Activity, AlertTriangle, Gauge, TrendingUp, TrendingDown } from "lucide-react"
+import { Thermometer, Activity, AlertTriangle, Gauge, TrendingUp, TrendingDown, Radar } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAegis } from "@/lib/aegis-context"
 import { useEffect, useState } from "react"
+
+interface KpiItem {
+  label: string
+  icon: React.ReactNode
+  value: string | number | undefined
+  unit?: string
+  isBadge?: boolean
+  badgeClass?: string
+  subValue?: string
+  showPulse?: boolean
+  delta?: { current: number; previous: number; unit: string } | null
+}
 
 const cardVariants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
@@ -139,7 +151,31 @@ export function KpiCards() {
     }
   }
 
-  const kpis = [
+  const getProximityColor = (proximity?: string) => {
+    switch (proximity?.toUpperCase()) {
+      case "DANGER":
+        return "bg-destructive text-destructive-foreground"
+      case "WARNING":
+        return "bg-yellow-500 text-yellow-950"
+      case "SAFE":
+        return "bg-primary text-primary-foreground"
+      default:
+        return "bg-muted text-muted-foreground"
+    }
+  }
+
+  // Calculate proximity status from distance (configurable thresholds)
+  const getProximityStatus = (distance?: number): "SAFE" | "WARNING" | "DANGER" | undefined => {
+    if (distance === undefined || distance === null) return undefined
+    if (distance < 30) return "DANGER"   // < 30cm = danger zone
+    if (distance < 100) return "WARNING" // < 100cm = warning zone
+    return "SAFE"
+  }
+
+  // Determine proximity status (from data or calculated)
+  const proximityStatus = latest?.proximity || getProximityStatus(latest?.distance)
+
+  const kpis: KpiItem[] = [
     {
       label: "Status",
       icon: <Activity className="h-4 w-4" />,
@@ -161,14 +197,22 @@ export function KpiCards() {
       unit: "mm/s",
       delta: previous && latest ? { current: latest.vib, previous: previous.vib, unit: "" } : null,
     },
-    {
+    // Show Distance KPI if ultrasonic data is available, otherwise show Severity
+    ...(latest?.distance !== undefined ? [{
+      label: "Proximity",
+      icon: <Radar className="h-4 w-4" />,
+      value: proximityStatus || "N/A",
+      subValue: latest?.distance !== undefined ? `${latest.distance.toFixed(0)} cm` : undefined,
+      isBadge: true,
+      badgeClass: getProximityColor(proximityStatus),
+    }] : [{
       label: "Severity",
       icon: <AlertTriangle className="h-4 w-4" />,
       value: latestEvent?.severity || "None",
       isBadge: true,
       badgeClass: getSeverityColor(latestEvent?.severity),
       showPulse: true,
-    },
+    }]),
   ]
 
   return (
@@ -219,8 +263,12 @@ export function KpiCards() {
                     initial={{ scale: 0.9 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 0.2 }}
+                    className="flex flex-col gap-1"
                   >
                     <Badge className={`${kpi.badgeClass} text-xs font-semibold px-3 py-1`}>{kpi.value}</Badge>
+                    {kpi.subValue && (
+                      <span className="text-xs text-muted-foreground font-mono">{kpi.subValue}</span>
+                    )}
                   </motion.div>
                 ) : (
                   <div className="flex flex-col gap-2">
