@@ -124,3 +124,103 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Glass morphism effects */
+.glass {
+  @apply bg-card/80 backdrop-blur-xl border-border/50;
+}
+
+.glass-subtle {
+  @apply bg-card/60 backdrop-blur-md border-border/30;
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px oklch(0.65 0.2 145 / 0.15);
+}
+
+.glow-primary-subtle {
+  box-shadow: 0 0 30px oklch(0.65 0.2 145 / 0.08);
+}
+
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* Card hover enhancement */
+.card-hover {
+  @apply transition-all duration-300 ease-out;
+}
+
+.card-hover:hover {
+  @apply border-primary/30;
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.3), 0 0 0 1px oklch(0.65 0.2 145 / 0.1);
+}
+
+/* Shimmer loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.01 250) 0%,
+    oklch(0.28 0.01 250) 50%,
+    oklch(0.22 0.01 250) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Pulse glow for status indicators */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 oklch(0.65 0.2 145 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px 4px oklch(0.65 0.2 145 / 0.2);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Smooth scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full transition-colors;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Table row hover effect */
+.table-row-hover {
+  @apply transition-colors duration-200;
+}
+
+.table-row-hover:hover {
+  @apply bg-secondary/60;
+}
+
+/* Focus ring enhancement */
+.focus-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+}

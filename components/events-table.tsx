@@ -2,12 +2,11 @@
 
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, X, ChevronDown } from "lucide-react"
+import { Search, X, ChevronDown, Bell, Filter } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -33,6 +32,15 @@ import { useAegis } from "@/lib/aegis-context"
 import type { EventItem } from "@/lib/types"
 
 const SEVERITY_OPTIONS = ["All", "CRITICAL", "WARNING", "INFO"]
+
+const rowVariants = {
+  hidden: { opacity: 0, x: -10 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.3, delay: i * 0.03 },
+  }),
+}
 
 export function EventsTable() {
   const { data, isLoading } = useAegis()
@@ -79,46 +87,58 @@ export function EventsTable() {
     })
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.35 }}
-    >
-      <Card className="bg-card border-border">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardTitle className="text-foreground">Events</CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <>
+      <Card className="bg-card/80 backdrop-blur-sm border-border/50 card-hover">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <span className="p-1.5 rounded-md bg-secondary/80">
+                <Bell className="h-4 w-4 text-primary" />
+              </span>
+              Events
+              {filteredEvents.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs font-normal bg-secondary/60 rounded-full text-muted-foreground">
+                  {filteredEvents.length}
+                </span>
+              )}
+            </CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                 <Input
                   placeholder="Search events..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-8 h-9 w-48 bg-secondary border-border"
+                  className="pl-9 h-10 w-52 bg-secondary/50 border-border/50 focus:bg-secondary focus:border-primary/30 transition-all duration-200"
                 />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
+                <AnimatePresence>
+                  {search && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={() => setSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-9 gap-1 bg-transparent">
+                  <Button variant="outline" size="sm" className="h-10 gap-2 bg-secondary/50 border-border/50 hover:bg-secondary hover:border-primary/30 transition-all duration-200">
+                    <Filter className="h-3.5 w-3.5" />
                     {severityFilter}
-                    <ChevronDown className="h-3.5 w-3.5" />
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-card border-border">
                   {SEVERITY_OPTIONS.map((opt) => (
                     <DropdownMenuItem
                       key={opt}
                       onClick={() => setSeverityFilter(opt)}
-                      className={severityFilter === opt ? "bg-secondary" : ""}
+                      className={`${severityFilter === opt ? "bg-primary/10 text-primary" : ""} cursor-pointer transition-colors`}
                     >
                       {opt}
                     </DropdownMenuItem>
@@ -132,42 +152,47 @@ export function EventsTable() {
           {isLoading && !data ? (
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <div key={i} className="h-12 w-full shimmer rounded" />
               ))}
             </div>
           ) : filteredEvents.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-muted-foreground">
-              No events yet
+            <div className="h-48 flex flex-col items-center justify-center text-muted-foreground gap-3">
+              <Bell className="h-12 w-12 text-muted-foreground/30" />
+              <p className="text-sm">No events recorded</p>
             </div>
           ) : (
             <ScrollArea className="h-[320px]">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[140px]">Time</TableHead>
-                    <TableHead className="w-[90px]">Severity</TableHead>
-                    <TableHead className="w-[100px]">Type</TableHead>
-                    <TableHead>Alerts</TableHead>
-                    <TableHead className="w-[70px] text-right">Temp</TableHead>
-                    <TableHead className="w-[70px] text-right">Vib</TableHead>
+                  <TableRow className="hover:bg-transparent border-border/30">
+                    <TableHead className="w-[140px] text-xs font-medium">Time</TableHead>
+                    <TableHead className="w-[90px] text-xs font-medium">Severity</TableHead>
+                    <TableHead className="w-[100px] text-xs font-medium">Type</TableHead>
+                    <TableHead className="text-xs font-medium">Alerts</TableHead>
+                    <TableHead className="w-[70px] text-right text-xs font-medium">Temp</TableHead>
+                    <TableHead className="w-[70px] text-right text-xs font-medium">Vib</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredEvents.map((event, idx) => (
-                    <TableRow
+                    <motion.tr
                       key={`${event.eventTs}-${idx}`}
-                      className="cursor-pointer"
+                      custom={idx}
+                      variants={rowVariants}
+                      initial="hidden"
+                      animate="visible"
+                      className="cursor-pointer border-border/20 table-row-hover"
                       onClick={() => setSelectedEvent(event)}
                     >
-                      <TableCell className="font-mono text-xs">
+                      <TableCell className="font-mono text-xs text-muted-foreground">
                         {formatTime(event.eventTs)}
                       </TableCell>
                       <TableCell>
-                        <Badge className={`${getSeverityColor(event.severity)} text-[10px]`}>
+                        <Badge className={`${getSeverityColor(event.severity)} text-[10px] font-semibold`}>
                           {event.severity}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">{event.eventType}</TableCell>
+                      <TableCell className="text-sm font-medium">{event.eventType}</TableCell>
                       <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">
                         {event.details.alerts.join(" • ") || "—"}
                       </TableCell>
@@ -177,7 +202,7 @@ export function EventsTable() {
                       <TableCell className="text-right font-mono text-sm">
                         {event.details.vib.toFixed(2)}
                       </TableCell>
-                    </TableRow>
+                    </motion.tr>
                   ))}
                 </TableBody>
               </Table>
@@ -187,25 +212,30 @@ export function EventsTable() {
       </Card>
 
       {/* Event Detail Modal */}
-      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent className="bg-card border-border max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              Event Details
-              {selectedEvent && (
-                <Badge className={getSeverityColor(selectedEvent.severity)}>
-                  {selectedEvent.severity}
-                </Badge>
-              )}
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <pre className="p-4 bg-secondary rounded-md text-xs font-mono overflow-x-auto">
-              {selectedEvent && JSON.stringify(selectedEvent, null, 2)}
-            </pre>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-    </motion.div>
+      <AnimatePresence>
+        {selectedEvent && (
+          <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
+            <DialogContent className="bg-card/95 backdrop-blur-xl border-border/50 max-w-2xl max-h-[80vh] shadow-2xl">
+              <DialogHeader className="pb-4 border-b border-border/30">
+                <DialogTitle className="flex items-center gap-3">
+                  <span className="p-2 rounded-lg bg-secondary/80">
+                    <Bell className="h-4 w-4 text-primary" />
+                  </span>
+                  Event Details
+                  <Badge className={`${getSeverityColor(selectedEvent.severity)} ml-auto`}>
+                    {selectedEvent.severity}
+                  </Badge>
+                </DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="max-h-[60vh]">
+                <pre className="p-4 bg-secondary/50 rounded-xl text-xs font-mono overflow-x-auto border border-border/20">
+                  {JSON.stringify(selectedEvent, null, 2)}
+                </pre>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
+    </>
   )
 }
