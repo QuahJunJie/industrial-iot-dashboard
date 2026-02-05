@@ -7,6 +7,7 @@ import {
   InitiateAuthCommand,
   GetUserCommand,
   GlobalSignOutCommand,
+  RespondToAuthChallengeCommand,
 } from "@aws-sdk/client-cognito-identity-provider"
 
 // Types for authentication
@@ -19,14 +20,22 @@ interface CognitoUser {
   refreshToken: string
 }
 
+interface PendingChallenge {
+  challengeName: string
+  session: string
+  username: string
+}
+
 interface AuthContextValue {
   user: CognitoUser | null
   isAuthenticated: boolean
   isAdmin: boolean
   isLoading: boolean
   error: string | null
+  pendingChallenge: PendingChallenge | null
   signIn: (username: string, password: string) => Promise<boolean>
   signOut: () => Promise<void>
+  completeNewPassword: (newPassword: string) => Promise<boolean>
   clearError: () => void
 }
 
@@ -65,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<CognitoUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [pendingChallenge, setPendingChallenge] = useState<PendingChallenge | null>(null)
 
   const isAuthenticated = !!user
   const isAdmin = user?.groups?.some(
@@ -127,6 +137,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const response = await cognitoClient.send(command)
 
+      // Handle NEW_PASSWORD_REQUIRED challenge
+      if (response.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+        setPendingChallenge({
+          challengeName: response.ChallengeName,
+          session: response.Session || "",
+          username,
+        })
+        setError("Please set a new password")
+        setIsLoading(false)
+        return false
+      }
+
       if (!response.AuthenticationResult) {
         throw new Error("Authentication failed - no result returned")
       }
@@ -173,6 +195,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const completeNewPassword = useCallback(async (newPassword: string): Promise<boolean> => {
+    if (!pendingChallenge) {
+      setError("No pending password challenge")
+      return false
+    }
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const command = new RespondToAuthChallengeCommand({
+        ChallengeName: "NEW_PASSWORD_REQUIRED",
+        ClientId: COGNITO_CLIENT_ID,
+        Session: pendingChallenge.session,
+        ChallengeResponses: {
+          USERNAME: pendingChallenge.username,
+          NEW_PASSWORD: newPassword,
+        },
+      })
+
+      const response = await cognitoClient.send(command)
+
+      if (!response.AuthenticationResult) {
+        throw new Error("Password change failed")
+      }
+
+      const { AccessToken, IdToken, RefreshToken } = response.AuthenticationResult
+
+      if (!AccessToken || !IdToken) {
+        throw new Error("Authentication failed - missing tokens")
+      }
+
+      // Decode ID token to get user info and groups
+      const decodedIdToken = decodeJwt(IdToken)
+      const groups = (decodedIdToken["cognito:groups"] as string[]) || []
+      const email = (decodedIdToken["email"] as string) || pendingChallenge.username
+
+      const cognitoUser: CognitoUser = {
+        username: pendingChallenge.username,
+        email,
+        groups,
+        accessToken: AccessToken,
+        idToken: IdToken,
+        refreshToken: RefreshToken || "",
+      }
+
+      setUser(cognitoUser)
+      setPendingChallenge(null)
+      return true
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Password change failed"
+      setError(message)
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }, [pendingChallenge])
+
   const signOut = useCallback(async () => {
     setIsLoading(true)
 
@@ -199,8 +279,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAdmin,
         isLoading,
         error,
+        pendingChallenge,
         signIn,
         signOut,
+        completeNewPassword,
         clearError,
       }}
     >
