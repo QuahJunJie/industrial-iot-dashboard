@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Settings,
   Monitor,
@@ -37,74 +37,28 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { useAegis } from "@/lib/aegis-context"
-
-export interface AppSettings {
-  theme: "dark" | "light" | "system"
-  compactMode: boolean
-  enableAnimations: boolean
-  refreshInterval: number
-  autoRefreshDefault: boolean
-  soundEnabled: boolean
-  tempWarningThreshold: number
-  tempCriticalThreshold: number
-  vibWarningThreshold: number
-  vibCriticalThreshold: number
-  temperatureUnit: "celsius" | "fahrenheit"
-  timeFormat: "12h" | "24h"
-}
-
-const DEFAULT_SETTINGS: AppSettings = {
-  theme: "dark",
-  compactMode: false,
-  enableAnimations: true,
-  refreshInterval: 5,
-  autoRefreshDefault: true,
-  soundEnabled: true,
-  tempWarningThreshold: 35,
-  tempCriticalThreshold: 45,
-  vibWarningThreshold: 1.5,
-  vibCriticalThreshold: 2.5,
-  temperatureUnit: "celsius",
-  timeFormat: "24h",
-}
-
-const STORAGE_KEY = "aegis-one-settings"
+import { useSettings, type AppSettings } from "@/lib/settings-context"
 
 export function SettingsPanel() {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [saved, setSaved] = useState(false)
   const { isConnected, autoRefresh, setAutoRefresh } = useAegis()
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        setSettings({ ...DEFAULT_SETTINGS, ...parsed })
-      } catch {
-        // Invalid JSON, use defaults
-      }
-    }
-  }, [])
-
-  const saveSettings = (newSettings: AppSettings) => {
-    setSettings(newSettings)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-  }
+  const { settings, updateSetting: updateSettingContext, resetToDefaults: resetContextDefaults } = useSettings()
 
   const updateSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
-    const newSettings = { ...settings, [key]: value }
-    saveSettings(newSettings)
+    updateSettingContext(key, value)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+    
     if (key === "autoRefreshDefault") {
       setAutoRefresh(value as boolean)
     }
   }
 
   const resetToDefaults = () => {
-    saveSettings(DEFAULT_SETTINGS)
-    setAutoRefresh(DEFAULT_SETTINGS.autoRefreshDefault)
+    resetContextDefaults()
+    setAutoRefresh(true)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   return (

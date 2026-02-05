@@ -6,10 +6,12 @@ import { Activity, Wifi, WifiOff, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAegis } from "@/lib/aegis-context"
+import { useSettings } from "@/lib/settings-context"
 import { SettingsPanel } from "@/components/settings-panel"
 
 export function TopBar() {
   const { isConnected, lastUpdated } = useAegis()
+  const { formatTime } = useSettings()
 
   return (
     <motion.header
@@ -81,12 +83,7 @@ export function TopBar() {
               <span className="text-xs text-muted-foreground">
                 Updated{" "}
                 <span className="font-mono text-foreground/80">
-                  {lastUpdated.toLocaleTimeString("en-US", {
-                    hour12: false,
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
+                  {formatTime(lastUpdated)}
                 </span>
               </span>
             </div>

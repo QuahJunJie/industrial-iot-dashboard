@@ -224,3 +224,64 @@
 .focus-ring {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
+
+/* Compact mode - reduces spacing throughout */
+.compact main {
+  @apply p-2 lg:p-4 space-y-4;
+}
+
+.compact .space-y-6 {
+  @apply space-y-3;
+}
+
+.compact .space-y-8 {
+  @apply space-y-4;
+}
+
+.compact .gap-6 {
+  @apply gap-3;
+}
+
+.compact .gap-5 {
+  @apply gap-2;
+}
+
+.compact .p-4 {
+  @apply p-2;
+}
+
+.compact .py-6 {
+  @apply py-3;
+}
+
+/* Disable animations */
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Light theme */
+.light {
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.15 0.01 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.01 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.01 250);
+  --primary: oklch(0.45 0.2 145);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.93 0.01 250);
+  --secondary-foreground: oklch(0.15 0.01 250);
+  --muted: oklch(0.93 0.01 250);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.45 0.2 145);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.25 27);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.88 0.01 250);
+  --input: oklch(0.93 0.01 250);
+  --ring: oklch(0.45 0.2 145);
+}

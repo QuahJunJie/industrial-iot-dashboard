@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { AegisProvider } from "@/lib/aegis-context"
+import { SettingsProvider } from "@/lib/settings-context"
 import { TopBar } from "@/components/top-bar"
 import { ControlsCard } from "@/components/controls-card"
 import { KpiCards } from "@/components/kpi-cards"
@@ -37,8 +38,9 @@ const itemVariants = {
 
 export default function Dashboard() {
   return (
-    <AegisProvider>
-      <div className="min-h-screen bg-background relative overflow-hidden">
+    <SettingsProvider>
+      <AegisProvider>
+        <div className="min-h-screen bg-background relative overflow-hidden">
         {/* Subtle background gradient */}
         <div className="fixed inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-transparent pointer-events-none" />
         <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/[0.03] rounded-full blur-3xl pointer-events-none" />
@@ -86,6 +88,7 @@ export default function Dashboard() {
         {/* Alert Toast */}
         <AlertToast />
       </div>
-    </AegisProvider>
+      </AegisProvider>
+    </SettingsProvider>
   )
 }
