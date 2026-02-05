@@ -102,6 +102,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
     setError(null)
 
+    // Validate environment variables
+    if (!COGNITO_CLIENT_ID) {
+      setError("Configuration error: NEXT_PUBLIC_COGNITO_CLIENT_ID is not set")
+      setIsLoading(false)
+      return false
+    }
+    
+    if (!COGNITO_USER_POOL_ID) {
+      setError("Configuration error: NEXT_PUBLIC_COGNITO_USER_POOL_ID is not set")
+      setIsLoading(false)
+      return false
+    }
+
     try {
       const command = new InitiateAuthCommand({
         AuthFlow: "USER_PASSWORD_AUTH",
