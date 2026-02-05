@@ -1,8 +1,10 @@
 "use client"
 
+import Link from "next/link"
 import { motion } from "framer-motion"
-import { Activity, Wifi, WifiOff } from "lucide-react"
+import { Activity, Wifi, WifiOff, Shield } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { useAegis } from "@/lib/aegis-context"
 
 export function TopBar() {
@@ -67,7 +69,7 @@ export function TopBar() {
         </div>
 
         <motion.div 
-          className="flex items-center gap-4"
+          className="flex items-center gap-3"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.4 }}
@@ -88,6 +90,18 @@ export function TopBar() {
               </span>
             </div>
           )}
+          
+          {/* Admin Analytics Link */}
+          <Link href="/admin/login">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-9 bg-secondary/30 border-border/50 hover:bg-primary/10 hover:border-primary/30 hover:text-primary transition-all duration-200"
+            >
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Admin</span>
+            </Button>
+          </Link>
         </motion.div>
       </div>
     </motion.header>

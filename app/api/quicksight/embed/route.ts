@@ -1,0 +1,164 @@
+import { NextRequest, NextResponse } from "next/server"
+import {
+  QuickSightClient,
+  GenerateEmbedUrlForRegisteredUserCommand,
+} from "@aws-sdk/client-quicksight"
+import {
+  CognitoIdentityProviderClient,
+  GetUserCommand,
+} from "@aws-sdk/client-cognito-identity-provider"
+
+// AWS Configuration from environment variables
+const AWS_REGION = process.env.AWS_REGION || "ap-southeast-1"
+const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID || ""
+const QUICKSIGHT_DASHBOARD_ID = process.env.QUICKSIGHT_DASHBOARD_ID || ""
+const QUICKSIGHT_NAMESPACE = process.env.QUICKSIGHT_NAMESPACE || "default"
+
+// Initialize AWS clients
+const quickSightClient = new QuickSightClient({
+  region: AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+  },
+})
+
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: AWS_REGION,
+})
+
+// Helper to decode JWT
+function decodeJwt(token: string): Record<string, unknown> {
+  try {
+    const base64Url = token.split(".")[1]
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    )
+    return JSON.parse(jsonPayload)
+  } catch {
+    return {}
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Get the authorization header
+    const authHeader = request.headers.get("authorization")
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error: "Missing or invalid authorization header" },
+        { status: 401 }
+      )
+    }
+
+    const accessToken = authHeader.split(" ")[1]
+    const idToken = request.headers.get("x-id-token")
+
+    if (!idToken) {
+      return NextResponse.json(
+        { error: "Missing ID token" },
+        { status: 401 }
+      )
+    }
+
+    // Verify the user with Cognito
+    try {
+      const getUserCommand = new GetUserCommand({
+        AccessToken: accessToken,
+      })
+      await cognitoClient.send(getUserCommand)
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid or expired token" },
+        { status: 401 }
+      )
+    }
+
+    // Decode ID token to check groups
+    const decodedToken = decodeJwt(idToken)
+    const groups = (decodedToken["cognito:groups"] as string[]) || []
+    
+    // Check if user is in admin group
+    const isAdmin = groups.some(
+      (group) => group.toLowerCase() === "admin" || group.toLowerCase() === "admins"
+    )
+
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: "Access denied. Admin group membership required." },
+        { status: 403 }
+      )
+    }
+
+    // Get the username from the token
+    const username = decodedToken["cognito:username"] as string || decodedToken["sub"] as string
+
+    if (!username) {
+      return NextResponse.json(
+        { error: "Could not determine user identity" },
+        { status: 400 }
+      )
+    }
+
+    // Generate QuickSight embed URL
+    // The user must be registered in QuickSight with the same identity
+    const quickSightUserArn = `arn:aws:quicksight:${AWS_REGION}:${AWS_ACCOUNT_ID}:user/${QUICKSIGHT_NAMESPACE}/${username}`
+
+    const command = new GenerateEmbedUrlForRegisteredUserCommand({
+      AwsAccountId: AWS_ACCOUNT_ID,
+      UserArn: quickSightUserArn,
+      ExperienceConfiguration: {
+        Dashboard: {
+          InitialDashboardId: QUICKSIGHT_DASHBOARD_ID,
+        },
+      },
+      SessionLifetimeInMinutes: 600, // 10 hours
+      AllowedDomains: [
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+        "https://*.vercel.app",
+      ],
+    })
+
+    const response = await quickSightClient.send(command)
+
+    if (!response.EmbedUrl) {
+      return NextResponse.json(
+        { error: "Failed to generate embed URL" },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      embedUrl: response.EmbedUrl,
+      expiresAt: new Date(Date.now() + 600 * 60 * 1000).toISOString(),
+    })
+  } catch (error) {
+    console.error("QuickSight embed error:", error)
+    
+    // Handle specific AWS errors
+    if (error instanceof Error) {
+      if (error.name === "ResourceNotFoundException") {
+        return NextResponse.json(
+          { error: "QuickSight dashboard or user not found" },
+          { status: 404 }
+        )
+      }
+      if (error.name === "AccessDeniedException") {
+        return NextResponse.json(
+          { error: "Insufficient permissions to access QuickSight" },
+          { status: 403 }
+        )
+      }
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    )
+  }
+}
