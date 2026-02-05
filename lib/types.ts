@@ -6,6 +6,9 @@ export interface TelemetryItem {
   vib: number
   status: string
   ts: number
+  // Ultrasonic sensor data (optional - for M5Core2)
+  distance?: number      // Distance in cm
+  proximity?: "SAFE" | "WARNING" | "DANGER"  // Safety zone status
 }
 
 export interface EventDetails {

@@ -7,15 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAegis } from "@/lib/aegis-context"
-import { Thermometer, Gauge, BarChart3 } from "lucide-react"
+import { Thermometer, Gauge, BarChart3, Radar } from "lucide-react"
 
-type ChartTab = "temperature" | "vibration"
+type ChartTab = "temperature" | "vibration" | "distance"
 type RangeValue = "30" | "60" | "120"
 
 export function TelemetryCharts() {
   const { data, isLoading } = useAegis()
   const [activeTab, setActiveTab] = useState<ChartTab>("temperature")
   const [range, setRange] = useState<RangeValue>("60")
+
+  // Check if any telemetry has distance data
+  const hasDistanceData = useMemo(() => {
+    return data?.telemetry?.some(item => item.distance !== undefined) ?? false
+  }, [data?.telemetry])
 
   const chartData = useMemo(() => {
     if (!data?.telemetry) return []
@@ -29,6 +34,7 @@ export function TelemetryCharts() {
       }),
       temp: item.temp,
       vib: item.vib,
+      distance: item.distance,
       ts: item.ts,
     }))
   }, [data?.telemetry, range])
@@ -44,6 +50,12 @@ export function TelemetryCharts() {
       dataKey: "vib",
       stroke: "#22c55e",
       label: "Vibration (mm/s)",
+      domain: [0, "auto"] as [number, "auto"],
+    },
+    distance: {
+      dataKey: "distance",
+      stroke: "#3b82f6",
+      label: "Distance (cm)",
       domain: [0, "auto"] as [number, "auto"],
     },
   }
@@ -77,6 +89,15 @@ export function TelemetryCharts() {
                   <Gauge className="h-3.5 w-3.5" />
                   Vib
                 </TabsTrigger>
+                {hasDistanceData && (
+                  <TabsTrigger 
+                    value="distance"
+                    className="text-xs px-3 py-1.5 data-[state=active]:bg-card data-[state=active]:shadow-sm gap-1.5 transition-all duration-200"
+                  >
+                    <Radar className="h-3.5 w-3.5" />
+                    Dist
+                  </TabsTrigger>
+                )}
               </TabsList>
             </Tabs>
             <ToggleGroup
