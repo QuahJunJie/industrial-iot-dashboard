@@ -87,12 +87,17 @@ export function EventsTable() {
       hour12: false,
     })
 
-  // Extract temp/vib from alert messages if not in details
+  // Extract temp/vib from metrics or alert messages
   const extractValue = (event: EventItem, type: 'temp' | 'vib'): number | null => {
-    // Try details first
+    // Try details.metrics first (M5Core2 format)
+    if ((event.details as any)?.metrics?.[type] != null) {
+      return (event.details as any).metrics[type]
+    }
+    
+    // Try details directly (legacy format)
     if (event.details?.[type] != null) return event.details[type]
     
-    // Extract from alert messages
+    // Extract from alert messages as fallback
     const pattern = type === 'temp' 
       ? /TEMP_(?:CRIT|WARN)\s+([\d.]+)/
       : /VIB_(?:CRIT|WARN)\s+([\d.]+)/
