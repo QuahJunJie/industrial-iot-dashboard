@@ -132,18 +132,17 @@ export function TelemetryCharts() {
             <p className="text-xs text-muted-foreground/60">Publish to topic aegisone/telemetry</p>
           </div>
         ) : (
-          <div className="h-[300px] w-full">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="h-full w-full"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="h-[300px] w-full"
+            >
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id={`gradient-${config.dataKey}`} x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor={config.fill} stopOpacity={0.4} />
@@ -190,11 +189,10 @@ export function TelemetryCharts() {
                       animationDuration={500}
                       animationEasing="ease-out"
                     />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                </AreaChart>
+              </ResponsiveContainer>
+            </motion.div>
+          </AnimatePresence>
         )}
       </CardContent>
     </Card>
