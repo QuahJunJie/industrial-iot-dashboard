@@ -126,6 +126,15 @@ export default function AdminAnalyticsPage() {
               Dashboard
             </Button>
             
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push("/admin/mock-data")}
+              className="gap-2 text-muted-foreground hover:text-foreground"
+            >
+              Mock Data
+            </Button>
+            
             <div className="h-6 w-px bg-border/50" />
             
             <div className="flex items-center gap-3">
