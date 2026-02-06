@@ -10,9 +10,10 @@ import {
 
 // AWS Configuration from environment variables
 const AWS_REGION = process.env.AWS_REGION || "ap-southeast-1"
-const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID || ""
-const QUICKSIGHT_DASHBOARD_ID = process.env.QUICKSIGHT_DASHBOARD_ID || ""
+const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID || "109990058588"
+const QUICKSIGHT_DASHBOARD_ID = process.env.QUICKSIGHT_DASHBOARD_ID || "67b21beb-3644-4359-b232-17cb646a49cb"
 const QUICKSIGHT_NAMESPACE = process.env.QUICKSIGHT_NAMESPACE || "default"
+const QUICKSIGHT_DIRECTORY_ALIAS = process.env.QUICKSIGHT_DIRECTORY_ALIAS || "QuahJunJie"
 
 /**
  * AWS Client Configuration
@@ -67,6 +68,19 @@ function decodeJwt(token: string): Record<string, unknown> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if we should use public share URL (no authentication required)
+    const usePublicShare = process.env.QUICKSIGHT_USE_PUBLIC_SHARE === "true"
+    
+    if (usePublicShare) {
+      // Return the public share embed URL
+      const publicEmbedUrl = `https://${AWS_REGION}.quicksight.aws.amazon.com/sn/embed/share/accounts/${AWS_ACCOUNT_ID}/dashboards/${QUICKSIGHT_DASHBOARD_ID}?directory_alias=${QUICKSIGHT_DIRECTORY_ALIAS}`
+      
+      return NextResponse.json({
+        embedUrl: publicEmbedUrl,
+        expiresAt: null, // Public shares don't expire
+      })
+    }
+
     // Get the authorization header
     const authHeader = request.headers.get("authorization")
     
