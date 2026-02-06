@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, X, ChevronDown, Bell, Filter } from "lucide-react"
+import { Search, X, ChevronDown, Bell, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -48,10 +48,12 @@ export function EventsTable() {
   const [search, setSearch] = useState("")
   const [severityFilter, setSeverityFilter] = useState("All")
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null)
+  const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc") // Latest first by default
 
   const filteredEvents = useMemo(() => {
     if (!data?.events) return []
-    return data.events.filter((event) => {
+    
+    const filtered = data.events.filter((event) => {
       const matchesSearch =
         search === "" ||
         event.severity.toLowerCase().includes(search.toLowerCase()) ||
@@ -62,7 +64,16 @@ export function EventsTable() {
 
       return matchesSearch && matchesSeverity
     })
-  }, [data?.events, search, severityFilter])
+    
+    // Sort by timestamp - descending (latest first) by default
+    return filtered.sort((a, b) => {
+      return sortOrder === "desc" ? b.eventTs - a.eventTs : a.eventTs - b.eventTs
+    })
+  }, [data?.events, search, severityFilter, sortOrder])
+  
+  const toggleSort = () => {
+    setSortOrder(prev => prev === "desc" ? "asc" : "desc")
+  }
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toUpperCase()) {
@@ -189,7 +200,19 @@ export function EventsTable() {
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-border/30">
-                    <TableHead className="w-[140px] text-xs font-medium">Time</TableHead>
+                    <TableHead className="w-[140px] text-xs font-medium">
+                      <button
+                        onClick={toggleSort}
+                        className="flex items-center gap-1.5 hover:text-primary transition-colors group"
+                      >
+                        Time
+                        {sortOrder === "desc" ? (
+                          <ArrowDown className="h-3.5 w-3.5 text-primary" />
+                        ) : (
+                          <ArrowUp className="h-3.5 w-3.5 text-primary" />
+                        )}
+                      </button>
+                    </TableHead>
                     <TableHead className="w-[90px] text-xs font-medium">Severity</TableHead>
                     <TableHead className="w-[100px] text-xs font-medium">Type</TableHead>
                     <TableHead className="text-xs font-medium">Alerts</TableHead>
