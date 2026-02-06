@@ -273,14 +273,33 @@ export default function AdminAnalyticsPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="h-[calc(100vh-280px)] min-h-[500px]"
+                  className="h-[calc(100vh-280px)] min-h-[500px] flex flex-col items-center justify-center gap-6 p-8"
                 >
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full border-0"
-                    title="QuickSight Dashboard"
-                    allowFullScreen
-                  />
+                  <div className="p-6 rounded-2xl bg-primary/10">
+                    <BarChart3 className="h-16 w-16 text-primary" />
+                  </div>
+                  <div className="text-center max-w-md">
+                    <p className="text-xl font-semibold text-foreground mb-2">QuickSight Dashboard Ready</p>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Due to security policies, QuickSight dashboards cannot be embedded directly. 
+                      Click the button below to open your analytics dashboard in a new tab.
+                    </p>
+                    <a
+                      href={embedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90">
+                        <BarChart3 className="h-5 w-5" />
+                        Open Analytics Dashboard
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </a>
+                    <p className="text-xs text-muted-foreground mt-4">
+                      Dashboard will open in a new tab with full interactivity
+                    </p>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.div
