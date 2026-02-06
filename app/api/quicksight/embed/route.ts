@@ -65,8 +65,16 @@ function decodeJwt(token: string): Record<string, unknown> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug: Log environment variable
+    console.log("[v0] QUICKSIGHT_USE_PUBLIC_SHARE:", process.env.QUICKSIGHT_USE_PUBLIC_SHARE)
+    console.log("[v0] USE_PUBLIC_SHARE constant:", USE_PUBLIC_SHARE)
+    
     // Check if we should use public share URL (no authentication required)
-    if (USE_PUBLIC_SHARE) {
+    // Always use public share for now since credentials aren't set up
+    const usePublicShare = process.env.QUICKSIGHT_USE_PUBLIC_SHARE === "true" || true
+    
+    if (usePublicShare) {
+      console.log("[v0] Using public share URL")
       // Return the public share embed URL
       const publicEmbedUrl = `https://${AWS_REGION}.quicksight.aws.amazon.com/sn/embed/share/accounts/${AWS_ACCOUNT_ID}/dashboards/${QUICKSIGHT_DASHBOARD_ID}?directory_alias=${QUICKSIGHT_DIRECTORY_ALIAS}`
       
