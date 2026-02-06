@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { RefreshCw, Copy, Check, Settings2, Server, Hash, Layers } from "lucide-react"
+import { RefreshCw, Copy, Check, Settings2, Server, Hash, Layers, Trash2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,7 @@ import { useAegis } from "@/lib/aegis-context"
 import { useState } from "react"
 
 export function ControlsCard() {
-  const { config, setConfig, autoRefresh, setAutoRefresh, refresh, isLoading } = useAegis()
+  const { config, setConfig, autoRefresh, setAutoRefresh, refresh, clearData, isLoading } = useAegis()
   const [copied, setCopied] = useState(false)
 
   const requestUrl = `${config.apiBaseUrl}/data?deviceId=${config.deviceId}&limit=${config.limit}`
@@ -99,6 +99,17 @@ export function ControlsCard() {
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                 Refresh
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearData}
+                className="h-10 gap-2 bg-destructive/5 border-destructive/20 hover:bg-destructive/10 hover:border-destructive/30 text-destructive transition-all duration-200"
+              >
+                <Trash2 className="h-4 w-4" />
+                Clear
               </Button>
             </motion.div>
             <div className="flex items-center gap-3 ml-auto px-3 py-2 rounded-lg bg-secondary/40">

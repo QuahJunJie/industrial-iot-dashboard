@@ -87,6 +87,29 @@ export function EventsTable() {
       hour12: false,
     })
 
+  // Extract temp/vib from metrics or alert messages
+  const extractValue = (event: EventItem, type: 'temp' | 'vib'): number | null => {
+    // Try details.metrics first (M5Core2 format)
+    if ((event.details as any)?.metrics?.[type] != null) {
+      return (event.details as any).metrics[type]
+    }
+    
+    // Try details directly (legacy format)
+    if (event.details?.[type] != null) return event.details[type]
+    
+    // Extract from alert messages as fallback
+    const pattern = type === 'temp' 
+      ? /TEMP_(?:CRIT|WARN)\s+([\d.]+)/
+      : /VIB_(?:CRIT|WARN)\s+([\d.]+)/
+    
+    for (const alert of event.details?.alerts || []) {
+      const match = alert.match(pattern)
+      if (match) return parseFloat(match[1])
+    }
+    
+    return null
+  }
+
   return (
     <>
       <Card className="bg-card/80 backdrop-blur-sm border-border/50 card-hover">
@@ -198,10 +221,16 @@ export function EventsTable() {
                         {event.details.alerts.join(" • ") || "—"}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm">
-                        {event.details?.temp != null ? event.details.temp.toFixed(1) : "—"}
+                        {(() => {
+                          const temp = extractValue(event, 'temp')
+                          return temp != null ? temp.toFixed(1) : "—"
+                        })()}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm">
-                        {event.details?.vib != null ? event.details.vib.toFixed(2) : "—"}
+                        {(() => {
+                          const vib = extractValue(event, 'vib')
+                          return vib != null ? vib.toFixed(2) : "—"
+                        })()}
                       </TableCell>
                     </motion.tr>
                   ))}

@@ -16,6 +16,7 @@ interface AegisContextValue {
   autoRefresh: boolean
   setAutoRefresh: (value: boolean) => void
   refresh: () => void
+  clearData: () => void
   newAlert: EventItem | null
   clearNewAlert: () => void
 }
@@ -95,6 +96,13 @@ export function AegisProvider({ children }: { children: React.ReactNode }) {
     fetchData()
   }, [fetchData])
 
+  const clearData = useCallback(() => {
+    setData(null)
+    setLastUpdated(null)
+    lastSeenEventTs.current = 0
+    setNewAlert(null)
+  }, [])
+
   // Initial fetch
   useEffect(() => {
     fetchData()
@@ -131,6 +139,7 @@ export function AegisProvider({ children }: { children: React.ReactNode }) {
         autoRefresh,
         setAutoRefresh,
         refresh,
+        clearData,
         newAlert,
         clearNewAlert,
       }}
