@@ -42,19 +42,22 @@ export function TelemetryCharts() {
   const chartConfig = {
     temperature: {
       dataKey: "temp",
-      stroke: "#f97316",
+      stroke: "#fb923c", // Brighter orange
+      fill: "#fb923c",
       label: "Temperature (°C)",
       domain: [0, "auto"] as [number, "auto"],
     },
     vibration: {
       dataKey: "vib",
-      stroke: "#22c55e",
+      stroke: "#4ade80", // Brighter green
+      fill: "#4ade80",
       label: "Vibration (mm/s)",
       domain: [0, "auto"] as [number, "auto"],
     },
     distance: {
       dataKey: "distance",
-      stroke: "#3b82f6",
+      stroke: "#60a5fa", // Brighter blue
+      fill: "#60a5fa",
       label: "Distance (cm)",
       domain: [0, "auto"] as [number, "auto"],
     },
@@ -143,23 +146,24 @@ export function TelemetryCharts() {
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
                       <linearGradient id={`gradient-${config.dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={config.stroke} stopOpacity={0.3} />
-                        <stop offset="100%" stopColor={config.stroke} stopOpacity={0} />
+                        <stop offset="0%" stopColor={config.fill} stopOpacity={0.4} />
+                        <stop offset="50%" stopColor={config.fill} stopOpacity={0.15} />
+                        <stop offset="100%" stopColor={config.fill} stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" strokeOpacity={0.5} vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#52525b" strokeOpacity={0.8} vertical={false} />
                     <XAxis
                       dataKey="time"
-                      tick={{ fill: "#a1a1aa", fontSize: 11, fontWeight: 500 }}
+                      tick={{ fill: "#d4d4d8", fontSize: 12, fontWeight: 500 }}
                       tickLine={false}
-                      axisLine={{ stroke: "#3f3f46", strokeOpacity: 0.5 }}
+                      axisLine={{ stroke: "#52525b", strokeOpacity: 0.8 }}
                       interval="preserveStartEnd"
                     />
                     <YAxis
                       domain={config.domain}
-                      tick={{ fill: "#a1a1aa", fontSize: 11, fontWeight: 500 }}
+                      tick={{ fill: "#d4d4d8", fontSize: 12, fontWeight: 500 }}
                       tickLine={false}
-                      axisLine={{ stroke: "#3f3f46", strokeOpacity: 0.5 }}
+                      axisLine={{ stroke: "#52525b", strokeOpacity: 0.8 }}
                     />
                     <Tooltip
                       contentStyle={{
@@ -179,7 +183,7 @@ export function TelemetryCharts() {
                       type="monotone"
                       dataKey={config.dataKey}
                       stroke={config.stroke}
-                      strokeWidth={2.5}
+                      strokeWidth={3}
                       fill={`url(#gradient-${config.dataKey})`}
                       dot={false}
                       isAnimationActive={true}
