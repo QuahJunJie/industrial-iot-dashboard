@@ -107,9 +107,25 @@ export function KpiCards() {
   const [showPulse, setShowPulse] = useState(false)
   const [pulseIntensity, setPulseIntensity] = useState<"warning" | "critical">("warning")
 
-  const latest = data?.telemetry?.[data.telemetry.length - 1]
-  const previous = data?.telemetry?.[data.telemetry.length - 2]
+  // Sort telemetry by timestamp to ensure latest is actually the most recent
+  const sortedTelemetry = data?.telemetry ? [...data.telemetry].sort((a, b) => a.ts - b.ts) : []
+  
+  const latest = sortedTelemetry[sortedTelemetry.length - 1]
+  const previous = sortedTelemetry[sortedTelemetry.length - 2]
   const latestEvent = data?.events?.[0]
+  
+  // Debug logging
+  useEffect(() => {
+    if (latest) {
+      console.log("[v0] Latest telemetry:", {
+        timestamp: latest.ts,
+        date: new Date(latest.ts).toISOString(),
+        temp: latest.temp,
+        vib: latest.vib,
+        distance: latest.distance
+      })
+    }
+  }, [latest])
 
   // Handle new alert pulse
   useEffect(() => {
