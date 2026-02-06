@@ -18,7 +18,7 @@ import { useAegis } from "@/lib/aegis-context"
 import { useState } from "react"
 
 export function ControlsCard() {
-  const { config, setConfig, autoRefresh, setAutoRefresh, refresh, clearData, isLoading } = useAegis()
+  const { config, setConfig, autoRefresh, setAutoRefresh, refresh, clearData, isLoading, data } = useAegis()
   const [copied, setCopied] = useState(false)
 
   const requestUrl = `${config.apiBaseUrl}/data?deviceId=${config.deviceId}&limit=${config.limit}`
@@ -27,6 +27,29 @@ export function ControlsCard() {
     await navigator.clipboard.writeText(requestUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+  
+  const inspectData = () => {
+    if (data?.telemetry && data.telemetry.length > 0) {
+      const sorted = [...data.telemetry].sort((a, b) => b.ts - a.ts)
+      console.log("[v0] Total telemetry records:", data.telemetry.length)
+      console.log("[v0] Latest (sorted):", {
+        ts: sorted[0].ts,
+        date: new Date(sorted[0].ts).toISOString(),
+        temp: sorted[0].temp,
+        vib: sorted[0].vib,
+        distance: sorted[0].distance
+      })
+      console.log("[v0] Oldest (sorted):", {
+        ts: sorted[sorted.length - 1].ts,
+        date: new Date(sorted[sorted.length - 1].ts).toISOString(),
+        temp: sorted[sorted.length - 1].temp,
+        vib: sorted[sorted.length - 1].vib
+      })
+      alert(`Latest data: ${sorted[0].temp}°C, ${sorted[0].vib} mm/s from ${new Date(sorted[0].ts).toLocaleString()}`)
+    } else {
+      alert("No telemetry data available")
+    }
   }
 
   return (
@@ -99,6 +122,17 @@ export function ControlsCard() {
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
                 Refresh
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={inspectData}
+                className="h-10 gap-2 bg-secondary/50 border-border/50 hover:bg-secondary transition-all duration-200"
+              >
+                <Settings2 className="h-4 w-4" />
+                Inspect
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
