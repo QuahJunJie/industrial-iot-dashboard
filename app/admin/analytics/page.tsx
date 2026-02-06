@@ -112,89 +112,116 @@ export default function AdminAnalyticsPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="sticky top-0 z-50 border-b border-border/50 bg-card/80 backdrop-blur-xl px-4 lg:px-8 py-4"
+        className="sticky top-0 z-50 border-b border-border/50 bg-card/80 backdrop-blur-xl"
       >
-        <div className="flex items-center justify-between max-w-[1800px] mx-auto">
-          <div className="flex items-center gap-5">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push("/")}
-              className="gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Dashboard
-            </Button>
-            
-            <div className="h-6 w-px bg-border/50" />
-            
+        <div className="max-w-[1800px] mx-auto px-6 lg:px-8 py-5">
+          {/* Top row - Navigation & Actions */}
+          <div className="flex items-center justify-between mb-4">
+            {/* Left - Navigation */}
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <Shield className="h-6 w-6 text-primary" />
-                <div className="absolute inset-0 bg-primary/20 blur-lg rounded-full" />
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-foreground tracking-tight">Admin Analytics</h1>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">QuickSight Dashboard</p>
-              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/")}
+                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Dashboard
+              </Button>
+              
+              <div className="h-5 w-px bg-border/40" />
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/admin/mock-data")}
+                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all"
+              >
+                Mock Data
+              </Button>
             </div>
 
-            <Badge className="bg-primary/10 text-primary border border-primary/20 px-3 py-1">
-              <Shield className="h-3 w-3 mr-1.5" />
-              Admin
-            </Badge>
+            {/* Right - User & Actions */}
+            <div className="flex items-center gap-3">
+              {/* User info */}
+              <div className="hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-xl bg-secondary/40 border border-border/30">
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-foreground">{user?.email || user?.username}</span>
+              </div>
+
+              {/* Refresh button */}
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchEmbedUrl}
+                  disabled={isLoadingEmbed}
+                  className="gap-2 h-9 px-4"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoadingEmbed ? "animate-spin" : ""}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </Button>
+              </motion.div>
+
+              {/* Sign out button */}
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="gap-2 h-9 px-4 bg-destructive/5 border-destructive/20 text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </Button>
+              </motion.div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* User info */}
-            <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-secondary/50">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-foreground">{user?.email || user?.username}</span>
+          {/* Bottom row - Title & Status */}
+          <div className="flex items-center justify-between">
+            {/* Title section */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <div className="absolute inset-0 bg-primary/10 blur-xl rounded-full -z-10" />
+              </div>
+              
+              <div>
+                <h1 className="text-xl font-bold text-foreground tracking-tight">Admin Analytics</h1>
+                <p className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  QuickSight Dashboard Integration
+                </p>
+              </div>
+
+              <Badge className="bg-primary/10 text-primary border border-primary/30 px-3 py-1.5 font-medium">
+                <Shield className="h-3 w-3 mr-1.5" />
+                Admin
+              </Badge>
             </div>
 
-            {/* Last refreshed */}
+            {/* Status info */}
             {lastRefreshed && (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50">
-                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary/30 border border-border/30">
+                <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground">
-                  Loaded{" "}
-                  <span className="font-mono text-foreground/80">
-                    {lastRefreshed.toLocaleTimeString("en-US", {
-                      hour12: false,
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+                  Last updated
+                </span>
+                <span className="text-xs font-mono text-foreground font-medium">
+                  {lastRefreshed.toLocaleTimeString("en-US", {
+                    hour12: false,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })}
                 </span>
               </div>
             )}
-
-            {/* Refresh button */}
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchEmbedUrl}
-                disabled={isLoadingEmbed}
-                className="gap-2 bg-secondary/50 border-border/50 hover:bg-secondary"
-              >
-                <RefreshCw className={`h-4 w-4 ${isLoadingEmbed ? "animate-spin" : ""}`} />
-                Refresh
-              </Button>
-            </motion.div>
-
-            {/* Sign out button */}
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSignOut}
-                className="gap-2 bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </Button>
-            </motion.div>
           </div>
         </div>
       </motion.header>
@@ -273,14 +300,33 @@ export default function AdminAnalyticsPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="h-[calc(100vh-280px)] min-h-[500px]"
+                  className="h-[calc(100vh-280px)] min-h-[500px] flex flex-col items-center justify-center gap-6 p-8"
                 >
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full border-0"
-                    title="QuickSight Dashboard"
-                    allowFullScreen
-                  />
+                  <div className="p-6 rounded-2xl bg-primary/10">
+                    <BarChart3 className="h-16 w-16 text-primary" />
+                  </div>
+                  <div className="text-center max-w-md">
+                    <p className="text-xl font-semibold text-foreground mb-2">QuickSight Dashboard Ready</p>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      Due to security policies, QuickSight dashboards cannot be embedded directly. 
+                      Click the button below to open your analytics dashboard in a new tab.
+                    </p>
+                    <a
+                      href={embedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90">
+                        <BarChart3 className="h-5 w-5" />
+                        Open Analytics Dashboard
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </a>
+                    <p className="text-xs text-muted-foreground mt-4">
+                      Dashboard will open in a new tab with full interactivity
+                    </p>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.div

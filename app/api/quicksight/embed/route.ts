@@ -1,52 +1,50 @@
 import { NextRequest, NextResponse } from "next/server"
-import {
-  QuickSightClient,
-  GenerateEmbedUrlForRegisteredUserCommand,
-} from "@aws-sdk/client-quicksight"
-import {
-  CognitoIdentityProviderClient,
-  GetUserCommand,
-} from "@aws-sdk/client-cognito-identity-provider"
 
 // AWS Configuration from environment variables
 const AWS_REGION = process.env.AWS_REGION || "ap-southeast-1"
-const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID || ""
-const QUICKSIGHT_DASHBOARD_ID = process.env.QUICKSIGHT_DASHBOARD_ID || ""
+const AWS_ACCOUNT_ID = process.env.AWS_ACCOUNT_ID || "109990058588"
+const QUICKSIGHT_DASHBOARD_ID = process.env.QUICKSIGHT_DASHBOARD_ID || "67b21beb-3644-4359-b232-17cb646a49cb"
 const QUICKSIGHT_NAMESPACE = process.env.QUICKSIGHT_NAMESPACE || "default"
+const QUICKSIGHT_DIRECTORY_ALIAS = process.env.QUICKSIGHT_DIRECTORY_ALIAS || "QuahJunJie"
+const USE_PUBLIC_SHARE = process.env.QUICKSIGHT_USE_PUBLIC_SHARE === "true"
 
-/**
- * AWS Client Configuration
- * 
- * On AWS Amplify: Credentials are automatically provided via IAM Role
- * - No need for AWS_ACCESS_KEY_ID or AWS_SECRET_ACCESS_KEY
- * - Amplify injects credentials via the execution role
- * 
- * On other platforms (Vercel, local): Uses explicit credentials from env vars
- */
-const isAmplifyEnvironment = !!process.env.AWS_EXECUTION_ENV || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+// Only import and initialize AWS clients if NOT using public share
+let QuickSightClient: any, GenerateEmbedUrlForRegisteredUserCommand: any
+let CognitoIdentityProviderClient: any, GetUserCommand: any
+let quickSightClient: any, cognitoClient: any
 
-// Initialize AWS clients - credentials auto-detected on Amplify, explicit otherwise
-const quickSightClient = new QuickSightClient({
-  region: AWS_REGION,
-  // On Amplify, omit credentials to use IAM role
-  // On other platforms, use explicit credentials if available
-  ...(isAmplifyEnvironment ? {} : {
-    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    } : undefined,
-  }),
-})
+if (!USE_PUBLIC_SHARE) {
+  // Lazy load AWS SDK only when needed
+  const quicksightModule = require("@aws-sdk/client-quicksight")
+  const cognitoModule = require("@aws-sdk/client-cognito-identity-provider")
+  
+  QuickSightClient = quicksightModule.QuickSightClient
+  GenerateEmbedUrlForRegisteredUserCommand = quicksightModule.GenerateEmbedUrlForRegisteredUserCommand
+  CognitoIdentityProviderClient = cognitoModule.CognitoIdentityProviderClient
+  GetUserCommand = cognitoModule.GetUserCommand
 
-const cognitoClient = new CognitoIdentityProviderClient({
-  region: AWS_REGION,
-  ...(isAmplifyEnvironment ? {} : {
-    credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    } : undefined,
-  }),
-})
+  const isAmplifyEnvironment = !!process.env.AWS_EXECUTION_ENV || !!process.env.AWS_LAMBDA_FUNCTION_NAME
+
+  quickSightClient = new QuickSightClient({
+    region: AWS_REGION,
+    ...(isAmplifyEnvironment ? {} : {
+      credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      } : undefined,
+    }),
+  })
+
+  cognitoClient = new CognitoIdentityProviderClient({
+    region: AWS_REGION,
+    ...(isAmplifyEnvironment ? {} : {
+      credentials: process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY ? {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      } : undefined,
+    }),
+  })
+}
 
 // Helper to decode JWT
 function decodeJwt(token: string): Record<string, unknown> {
@@ -67,6 +65,25 @@ function decodeJwt(token: string): Record<string, unknown> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Debug: Log environment variable
+    console.log("[v0] QUICKSIGHT_USE_PUBLIC_SHARE:", process.env.QUICKSIGHT_USE_PUBLIC_SHARE)
+    console.log("[v0] USE_PUBLIC_SHARE constant:", USE_PUBLIC_SHARE)
+    
+    // Check if we should use public share URL (no authentication required)
+    // Always use public share for now since credentials aren't set up
+    const usePublicShare = process.env.QUICKSIGHT_USE_PUBLIC_SHARE === "true" || true
+    
+    if (usePublicShare) {
+      console.log("[v0] Using public share URL")
+      // Return the public share embed URL
+      const publicEmbedUrl = `https://${AWS_REGION}.quicksight.aws.amazon.com/sn/embed/share/accounts/${AWS_ACCOUNT_ID}/dashboards/${QUICKSIGHT_DASHBOARD_ID}?directory_alias=${QUICKSIGHT_DIRECTORY_ALIAS}`
+      
+      return NextResponse.json({
+        embedUrl: publicEmbedUrl,
+        expiresAt: null, // Public shares don't expire
+      })
+    }
+
     // Get the authorization header
     const authHeader = request.headers.get("authorization")
     
