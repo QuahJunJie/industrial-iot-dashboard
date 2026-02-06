@@ -69,6 +69,24 @@ export function AegisProvider({ children }: { children: React.ReactNode }) {
       }
 
       const result: AegisOneResponse = await response.json()
+      
+      // Debug: Log telemetry data to see what we're getting
+      if (result.telemetry && result.telemetry.length > 0) {
+        console.log("[v0] API returned", result.telemetry.length, "telemetry records")
+        console.log("[v0] First record:", {
+          ts: result.telemetry[0].ts,
+          date: new Date(result.telemetry[0].ts).toISOString(),
+          temp: result.telemetry[0].temp,
+          vib: result.telemetry[0].vib
+        })
+        console.log("[v0] Last record:", {
+          ts: result.telemetry[result.telemetry.length - 1].ts,
+          date: new Date(result.telemetry[result.telemetry.length - 1].ts).toISOString(),
+          temp: result.telemetry[result.telemetry.length - 1].temp,
+          vib: result.telemetry[result.telemetry.length - 1].vib
+        })
+      }
+      
       setData(result)
       setIsConnected(true)
       setLastUpdated(new Date())
